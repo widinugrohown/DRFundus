@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROPVision</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+
+        header {
+            background: #ffffff;
+            color: #333;
+            padding-top: 30px;
+            min-height: 70px;
+            border-bottom: #ccc 1px solid;
+        }
+
+        header a {
+            color: #333;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 16px;
+        }
+
+        .logo {
+            float: left;
+        }
+
+        .logo img {
+            height: 50px;
+        }
+
+        .main-nav {
+            float: right;
+            margin-top: 10px;
+        }
+
+        .main-nav a {
+            margin-left: 20px;
+        }
+
+        .mockup {
+            text-align: center;
+            padding: 20px 0;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .form-container {
+            display: flex;
+            justify-content: space-between;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container .form-details {
+            width: 50%;
+        }
+
+        .form-container .result {
+            width: 40%;
+            text-align: center;
+            border-left: 1px solid #ddd;
+            padding-left: 20px;
+        }
+
+        .form-details input,
+        .form-details textarea {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .form-details button {
+            background: #28a745;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .result img {
+            width: 80%;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .result .class-name {
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .result .prediction-probability {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <a href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='images/DRVision.png') }}" alt="DRVision Logo"></a>
+            </div>
+            <div class="main-nav">
+                <a href="{{ url_for('home') }}">Home</a>
+                <a href="#">Predict</a>
+                <a href="#">History</a>
+                <a href="#">Contact us</a>
+                <a href="#">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="mockup">Fundus ROP Disease Detection</div>
+
+        <div class="form-container">
+            <div class="form-details">
+                <h2>Patient Details</h2>
+                <input type="text" placeholder="Patient ID" />
+                <input type="text" placeholder="Age" />
+                <input type="text" placeholder="Full Name" />
+                <input type="email" placeholder="Email" />
+                <input type="tel" placeholder="Phone" />
+                <textarea placeholder="Address"></textarea>
+                <input type="file" id="upload-image" />
+                <button onclick="predict()">Predict</button>
+            </div>
+
+            <div class="result">
+                <h2>Result</h2>
+                <div class="class-name">Class Name is <span id="class-name"></span></div>
+                <div class="prediction-probability">Prediction Probability: <span id="prediction-probability"></span></div>
+                <center><img id="result-image" src="" alt="Uploaded Image" style="display: none;"></center>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function predict() {
+            var formData = new FormData();
+            var fileInput = document.getElementById('upload-image');
+            var file = fileInput.files[0];
+            formData.append('file', file);
+            
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                document.getElementById('class-name').innerText = data['class_name'];
+                document.getElementById('prediction-probability').innerText = (data['prediction_probability'] * 100).toFixed(2) + '%';
+                document.getElementById('result-image').src = data['image_path'];
+                document.getElementById('result-image').style.display = 'block';  // Show the image
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+    
+</body>
+
+</html>
